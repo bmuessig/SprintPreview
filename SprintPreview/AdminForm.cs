@@ -39,7 +39,7 @@ namespace SprintPreview
         /// <summary>
         /// Chooses a path and determines additional information about the installation.
         /// </summary>
-        /// <param name="path"></param>
+        /// <param name="path">The Sprint-Layout install path to choose.</param>
         private void Choose(string path)
         {
             // Sanitze the input
@@ -141,8 +141,8 @@ namespace SprintPreview
             if (revertChanges)
             {
                 // Perform the operations and store the result
-                bool resultUndoPatching = Patcher.Copy(sourcePath, targetPath);
-                bool resultUndoFiles = Patcher.RemoveFiles(sourceHash, installPath);
+                bool resultUndoPatching = Patcher.Copy(sourcePath, targetPath),
+                     resultUndoFiles = resultUndoPatching && Patcher.RemoveFiles(sourceHash, installPath);
 
                 // Check, if this was a success
                 if (resultUndoPatching && resultUndoFiles)
@@ -161,8 +161,9 @@ namespace SprintPreview
 
             // Otherwise, make the changes
             // Perform the operations and store the result
-            bool resultBackup = Patcher.Copy(sourcePath, targetPath);
-            bool resultPatching = Patcher.Patch(sourceHash, sourcePath), resultFiles = Patcher.CreateFiles(sourceHash, installPath);
+            bool resultBackup = Patcher.Copy(sourcePath, targetPath),
+                 resultPatching = resultBackup && Patcher.Patch(sourceHash, sourcePath),
+                 resultFiles = resultBackup && Patcher.CreateFiles(sourceHash, installPath);
 
             // Check, if this was a success
             if (resultBackup && resultPatching && resultFiles)
@@ -170,7 +171,7 @@ namespace SprintPreview
                     "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
             else
                 MessageBox.Show(string.Format("At least one error occurred.\n\nBacking up {0}\nPatching \"{1}\" {2}.\nCreating files in {3} {4}.",
-                    resultBackup ? "succeeded (you can easily undo the changes" : "failed (you will have to re-install the software)",
+                    resultBackup ? "succeeded (you can easily undo the changes)" : "failed (you will have to re-install the software)",
                     targetPath, resultPatching ? "succeeded (the patch should mostly work)" : "failed (please retry)",
                     installPath, resultFiles ? "succeeded (please retry)" : "failed (you may want to retry)"),
                     "Failure", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
